@@ -1,0 +1,367 @@
+% !TEX options=--shell-escape
+
+\documentclass[11pt]{beamer}
+\usetheme[sectionpage=none, numbering=none]{metropolis}           % Use metropolis theme
+    % Kill page numbers with [numbering=none] in next line:
+    % To do printouts, add ", handout"  after aspectratio.
+\usepackage{makecell}
+\usepackage{booktabs}
+%\usepackage{graphicx}
+\usepackage{color}
+\usepackage{minted}
+
+
+\title{Defensive Programming}
+\author{    \small Nick Eubank \\
+            \scriptsize{CSDI, Vanderbilt University}\vspace*{.15in}}
+\date{\vspace*{.3in} \today}
+
+
+% This is the beginning of a real document!
+\begin{document}
+
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+
+\begin{frame}[c]{Goals}
+\begin{enumerate}
+    \item Introduce principles of \emph{Defensive Programming}
+    \item Learn four specific ``best practices''
+    \begin{itemize}
+        \pause \item Don't transcribe, export
+        \pause \item Use tests
+        \pause \item Don't duplicate information
+        \pause \item Use good style
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[c]{Defensive programming}
+Philosophy of writing code \pause motivated by the simple supposition: \\
+
+\begin{center}
+    \pause \alert{People are bad at writing code}
+\end{center}
+\pause If we want to avoid errors, \pause not enough to \alert{``just be careful.''}\\
+$\Rightarrow$ Need strategies take take our fallibility into account
+\end{frame}
+
+
+\begin{frame}[c]{Defensive programming}
+    Set of best practices designed to:
+    \begin{enumerate}
+        \pause \item Minimize opportunities for errors to enter code
+        \pause \item Maximize the probability that \emph{when} we commit errors, we catch them quickly
+    \end{enumerate}
+\end{frame}
+
+
+\begin{frame}\frametitle{Do I need defensive programming?}
+\begin{center}
+    \pause \LARGE \alert{YES.}
+\end{center}
+\end{frame}
+
+\begin{frame}\frametitle{Do I need defensive programming?}
+\begin{center}
+    \alert{``To Err is Human''}
+\end{center}
+\begin{itemize}
+    \pause \item \emph{Among professional programmers}, average error rate is 10 - 50 bugs per 1,000 lines of delivered code \\
+    {\color{gray}{Steve McConnell, 1993}}
+\end{itemize}
+``Bugs'' $\nRightarrow$ syntax errors
+\end{frame}
+
+\begin{frame}\frametitle{Do I need defensive programming?}
+QJPS Replication Review: Before publication, test whether replication packages run and generate results in the paper. \\
+
+\pause From 2012 - 2016
+\begin{itemize}
+    \pause \item 4 packages passed without modifications
+    \pause \item \alert{\emph{58\%}} of packages generated results that were different from those in the paper.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[t]\frametitle{Do I need defensive programming?}
+    \begin{enumerate}
+        \pause \item If a correlation exists between sophistication of analysis and likelihood of errors, it is if anything positive.
+        \begin{itemize}
+            \item Senior, junior, fancy, basic: all had problems!
+        \end{itemize}
+        \pause \item Even if you trust yourself, do you trust your coauthors?
+        \begin{itemize}
+            \pause \item (Do you trust the version of you that wrote that code at 3am?))
+        \end{itemize}
+        \pause \item Do you trust the people who made the dataset you're using?
+        \begin{itemize}
+            \pause \item If you estimate the share of a population that's female, and someone left a \texttt{7} in the \texttt{female} variable, if you don't catch it, that means your answer is \emph{wrong}.
+        \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+
+\begin{frame}[c]{Four Skills}
+    \tableofcontents
+\end{frame}
+
+
+
+\section{Write tests}
+
+\begin{frame}[c]{Four Skills}
+    \tableofcontents[current]
+\end{frame}
+
+\begin{frame}\frametitle{Write tests}
+    If you use R:
+    \begin{itemize}
+        \item Go to: \url{www.nickeubank.com/data-integrity-tests-r}
+    \end{itemize}
+    \vspace{1cm}
+    \pause
+    If you don't use R and use Stata (or Python) instead...
+    \begin{enumerate}
+        \pause \item Good for you for using a good language!
+        \pause \item Same concepts, different syntax:
+        \begin{itemize}
+            \pause \item Stata: \texttt{assert STATEMENT} (i.e. \texttt{assert 1 == 0})
+            \pause \item Python: \texttt{assert STATEMENT} (i.e. \texttt{assert 1 == 0})
+        \end{itemize}
+    \end{enumerate}
+    \vspace{1cm}
+    \pause Stata tutorial: \url{www.nickeubank.com/data-integrity-tests-stata}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Writing tests}
+Is age always positive?
+
+\vspace{1cm}
+This will pass (do nothing):
+\begin{minted}{r}
+age = c(42, 20, 31, 18)
+# Make sure age is positive:
+stopifnot( age > 0 )
+\end{minted}
+
+\vspace{1cm}
+But if, for example, ``missing'' was coded as -99, this would throw an error:
+\begin{minted}{r}
+age = c(42, 20, 31, -99)
+stopifnot( age > 0 )
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Writing tests}
+For vectors, \texttt{stopifnot} checks if ALL values are TRUE.
+\vspace{1cm}
+
+This will fail:
+\begin{minted}{r}
+# Are all values True?
+v = c(1, 2, 3)
+stopifnot( v == 2 )
+\end{minted}
+\vspace{1cm}
+This will pass:
+\begin{minted}{r}
+stopifnot( v > 0 )
+\end{minted}
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Writing tests}
+Are at least SOME values non-zero?
+\vspace{1cm}
+\begin{minted}{r}
+v = c(0, 0, 1, 0)
+stopifnot( any(v != 0) )
+\end{minted}
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Writing tests}
+
+Can combine with functions:
+\vspace{1cm}
+\begin{minted}{r}
+stopifnot( length(VECTOR) == 100 )
+\end{minted}
+
+\end{frame}
+
+\begin{frame}\frametitle{Tests: Exercise 1}
+Setup:
+\begin{enumerate}
+    \pause \item Download project file
+    \pause \item Open \texttt{my\_analysis.R}, set the working directory to the \texttt{DefensiveProgramming\_Part1} folder, and load data.
+    \pause \item Run the file.
+\end{enumerate}
+
+Exercises:
+\begin{enumerate}
+    \pause \item The average household size in this data SHOULD be about 4.1 people. What's wrong?
+    \pause \item Write a test to catch the problem.
+    \pause \item What tests do you think we should have around the merge here? Add some tests.
+\end{enumerate}
+Extra credit: ELF is also wrong. WITHOUT focusing on what in the code might be wrong, write some tests for general properties of ELF.
+\end{frame}
+
+\begin{frame}\frametitle{Tests: Exercise 1 (Part 2!)}
+Your co-author just updated your data!
+
+\begin{enumerate}
+    \item Change your working directory to \texttt{DefensiveProgramming\_Part2}, update file names to \texttt{\_v2}, and run it!
+    \item Did you find a problem with the merge?
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}\frametitle{Tests: When to write them}
+
+\begin{itemize}
+    \pause \item \textbf{After merges} No where are problems with data made more clear then in a merge. ALWAYS add tests after a merge!
+    \pause \item \textbf{After complicated manipulations} If you had to think about it, you should test to do it.
+    \pause \item \textbf{Before dropping observations}
+\end{itemize}
+
+\vspace{1cm}
+\pause \textbf{Adriane Rule:} Most of use check things interactively to make sure we did it right. A good rule of thumb is that when you catch yourself checking something interactively, stop and write it as a test.
+
+\end{frame}
+
+
+\section{Don't duplicate information}
+
+
+\begin{frame}[c]{Four Skills}
+    \tableofcontents[currentsection]
+\end{frame}
+
+
+\begin{frame}[fragile]{Don't duplicate information}
+
+\begin{itemize}
+    \pause \item If information is represented in many places, when you make changes you have to find all those places.
+    \pause \item If information is represented once, and everything else points back to that representation, one change will \emph{always} change everything.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Don't duplicate information}
+
+Duplicated information:
+\vspace{1cm}
+\begin{minted}{r}
+df$var1 <- gsub("armadillo", "Mr. Armadillo", df$var1)
+df$var2 <- gsub("armadillo", "Mr. Armadillo", df$var2)
+
+...
+[Other manipulations]
+...
+
+df$var7 <- gsub("armadillo", "Mr. Armadillo", df$var7)
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Don't duplicate information}
+One representation:
+\vspace{1cm}
+\begin{minted}{r}
+pre_change_name <- "armadillo"
+replacement_name <- "Mr. Armadillo"
+
+df$var1 <- gsub(pre_change_name,
+                replacement_name, df$var1)
+df$var2 <- gsub(pre_change_name,
+                replacement_name, df$var2)
+df$var7 <- gsub(pre_change_name,
+                replacement_name, df$var7)
+\end{minted}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Don't duplicate information}
+One representation:
+\vspace{1cm}
+\begin{minted}{r}
+pre_change_name <- "armadillo"
+replacement_name <- "Dr. Armadillo"
+
+df$var1 <- gsub(pre_change_name,
+                replacement_name, df$var1)
+df$var2 <- gsub(pre_change_name,
+                replacement_name, df$var2)
+df$var7 <- gsub(pre_change_name,
+                replacement_name, df$var7)
+\end{minted}
+\end{frame}
+
+\section{Don't transcribe, export}
+
+\begin{frame}[c]{Four Skills}
+    \tableofcontents[currentsection]
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Don't transcribe results!}
+
+Number one reason papers don't match real results at QJPS.
+\vspace{0.5cm}
+
+R:
+\begin{itemize}
+    \item \texttt{stargazer}
+    \item Tutorial: \url{http://jakeruss.com/cheatsheets/stargazer.html}
+    \item Custom: \url{http://stanford.edu/~ejdemyr/r-tutorials/tables-in-r/}
+\end{itemize}
+
+Stata:
+\begin{itemize}
+    \item Summary: \url{http://www.nickeubank.com/exporting-results-stata-latex/}
+\end{itemize}
+
+\textbf{Use for numbers in your text as well!}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Don't transcribe results: Exercise 2}
+Oh man, our tests found all these problems. Ugh, why did we put all those old results in by hand?! Now we have to copy them again. Or... we could make the automatically updating!
+
+1) Open our latex analysis file (\texttt{my\_writeup.tex}).
+
+2) Export the regression table at the end of \texttt{my\_analysis.R} using stargazer. The syntax is:
+
+\begin{minted}{r}
+stargazer(YOUR_DATA, title="TITLE HERE",
+          type="latex",
+          out='FILE_NAME.tex' )
+\end{minted}
+
+3) Import it into your latex document using the \texttt{\\input\{\}} command.
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Don't transcribe: Exercise 2 (Part 2)}
+Now, in the text, we say that households have an average size of 8, but we know that's wrong. Can you export the average size of the household from R and import it into LaTeX? Hint: Here's how you write a number to a file as text:
+
+\begin{minted}{r}
+    x = 1/3
+    x_as_string = format(x, digits=2)
+    write(x_as_string, "my_file.tex")
+\end{minted}
+\end{frame}
+
+
+
+\section{Use good style}
+\begin{frame}[c]{Four Skills}
+    \tableofcontents[currentsection]
+\end{frame}
+
+
+\end{document}
