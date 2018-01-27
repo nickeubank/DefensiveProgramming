@@ -1,26 +1,27 @@
 * Set working directory here
 cd /users/nick/github/instructionalmaterials/defensiveprogramming/exercises
 
-* Load polity data
-use polity, clear
+* Load WDI data.
+* Provides data on all possibly included countries.
+use wdi, clear
 
-* Merge with wdi (use the var country_name)
-rename country country_name
-merge 1:1 country_name using wdi
+* Merge with polity.
+* Should be a perfect subset of WDI data.
+rename country_name country
+merge 1:1 country using polity.dta
 
 **********
 * Let's run some regressions!
 **********
 
 * Basic specification
-reg polity natural_resources_pct_gdp
+reg polity natural_resources_pct_gdp gdp_per_cap
 
-* Add in some economic controls
-reg polity natural_resources_pct_gdp gdp_per_cap urban_pct
+* Does life expectancy matter?
+reg polity natural_resources_pct_gdp gdp_per_cap life_expectancy
 
-* Well, let's add population. Maybe only holds for small countries.
-reg polity natural_resources_pct_gdp gdp_per_cap population urban_pct
+* What about under 5 mortality?
+reg polity natural_resources_pct_gdp gdp_per_cap under5_mortality
 
-* Oh, but what about health? That could be important for... OK, I don't have a great reason it
-* would matter. But this is just for fun.
-reg polity natural_resources_pct_gdp gdp_per_cap population urban_pct life_expectancy maternal_death_risk under5_mortality
+* Maybe maternal dealth risk
+reg polity natural_resources_pct_gdp gdp_per_cap maternal_death_risk

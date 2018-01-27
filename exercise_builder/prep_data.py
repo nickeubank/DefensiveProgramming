@@ -55,12 +55,16 @@ wdi = wdi[list(renames.values())]
 wdi = wdi[pd.notnull(wdi.country_name)]
 wdi['country_name'] = wdi.country_name.str.replace(u"(\u2018|\u2019)", "'")
 
-
+# Add duplicate rows to WDI as bug to be caught with test. 
+start = len(wdi)
+wdi = pd.concat([wdi, wdi.sample(5)])
+assert len(wdi) == start + 5
 
 wdi.to_stata('exercises/wdi.dta')
 polity.to_stata('exercises/polity.dta')
 
 a = pd.merge(wdi, polity, how='outer', left_on='country_name', right_on='country', 
-             indicator=True, validate='1:1')
+             indicator=True, validate='m:1')
 
-assert (a._merge != "right_only").all()
+# Russia and Myanmar have deliberately different spellings
+assert not (a._merge != "right_only").all()

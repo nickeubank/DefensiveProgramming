@@ -220,3 +220,6 @@ TSWLatexianTemp*
 *-tags.tex
 
 _minted*
+*.Rhistory
+*.ipynb_checkpoints
+*/.ipynb_checkpoints/*
